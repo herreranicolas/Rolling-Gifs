@@ -1,11 +1,24 @@
 import { useEffect, useState } from "react";
 import { Loading } from "./ui/Loading";
+import Swal from "sweetalert2";
 
 const noImage = import.meta.env.VITE_NO_IMAGE;
 
 const DataCard = ({ data }) => {
   const [dataWithLikes, setDataWithLikes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 1500,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener("mouseenter", Swal.stopTimer);
+      toast.addEventListener("mouseleave", Swal.resumeTimer);
+    },
+  });
 
   const addLikeOnClick = (id) => {
     setDataWithLikes((prevData) =>
@@ -25,7 +38,35 @@ const DataCard = ({ data }) => {
     const action = !clickedItem.favorite
       ? "New favorite added!"
       : "Favorite removed!";
+
     console.log(action, clickedItem);
+
+    const icon = !clickedItem.favorite
+      ? `<i class="bi bi-heart-fill fs-6"></i>`
+      : `<i class="bi bi-heartbreak-fill fs-6"></i>`;
+
+    Toast.fire({
+      iconColor: "#dc3545",
+      iconHtml: icon,
+      title: action,
+    });
+  };
+
+  const handleShareClick = async (url) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      Toast.fire({
+        iconColor: "#ffc107",
+        icon: "success",
+        title: "URL copied to clipboard",
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.fire({
+        icon: "error",
+        title: "Failed to copy URL to clipboard",
+      });
+    }
   };
 
   const formatData = () => {
@@ -52,7 +93,7 @@ const DataCard = ({ data }) => {
         <div className="col" key={item.id}>
           <div className="card shadow">
             <img
-              src={item.images.fixed_width_small.url || noImage}
+              src={item.images.original.url || noImage}
               alt={item.title}
               width={"100%"}
               height={"230"}
@@ -88,7 +129,12 @@ const DataCard = ({ data }) => {
                     ></i>
                   </button>
                 </div>
-                <button className="btn btn-outline-warning">
+                <button
+                  className="btn btn-outline-warning"
+                  onClick={() => {
+                    handleShareClick(item.images.original.url);
+                  }}
+                >
                   <i className="bi bi-share-fill"></i>
                 </button>
               </div>
