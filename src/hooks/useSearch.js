@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
 
-const useSearch = (url) => {
+const useSearch = (url, search) => {
   const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasDataFetched, setHasDataFetched] = useState(false);
+  const [currentSearch, setCurrentSearch] = useState(search);
 
   const getSearch = async () => {
     try {
       const response = await fetch(url);
-      const { data } = await response.json();
-      setData(data);
+      const { data: responseData, pagination: responsePagination } =
+        await response.json();
+      if (!hasDataFetched) {
+        setData(responseData);
+        setHasDataFetched(true);
+      } else {
+        setData((prevData) => [...prevData, ...responseData]);
+      }
+      setPagination(responsePagination);
       setIsLoading(false);
     } catch (error) {
       setError(error);
@@ -20,7 +30,13 @@ const useSearch = (url) => {
     getSearch();
   }, [url]);
 
-  return { data, isLoading, error };
+  useEffect(() => {
+    if (currentSearch !== search) {
+      setData([]);
+    }
+  }, [search]);
+
+  return { data, pagination, isLoading, error };
 };
 
 export default useSearch;

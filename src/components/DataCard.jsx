@@ -1,24 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Loading } from "./ui/Loading";
-import Swal from "sweetalert2";
+import Toast from "./ui/Toast";
 
 const noImage = import.meta.env.VITE_NO_IMAGE;
 
 const DataCard = ({ data }) => {
   const [dataWithLikes, setDataWithLikes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 1500,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener("mouseenter", Swal.stopTimer);
-      toast.addEventListener("mouseleave", Swal.resumeTimer);
-    },
-  });
 
   const addLikeOnClick = (id) => {
     setDataWithLikes((prevData) =>
